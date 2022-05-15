@@ -3,10 +3,20 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const cors = require('cors');
 
 const routesV1 = require('./routes/v1');
 
 const app = express();
+
+// Cross origin setup
+const corsOptions = {
+  origin: '*',
+  allowedHeaders: ['Content-Type', 'Authorization', 'Content-Length', 'X-Requested-With', 'Accept'],
+  methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+app.use(cors(corsOptions));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

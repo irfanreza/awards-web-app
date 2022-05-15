@@ -1,5 +1,5 @@
 // Services
-const { userFindOne } = require('../../services/user.service');
+const { findOneUser } = require('../../services/users.service');
 
 // Utils
 const { responseSuccess, responseError } = require('../../utils/responseHandler');
@@ -9,7 +9,7 @@ module.exports = {
     try {
       const { email } = req.body;
 
-      const user = await userFindOne(email);
+      const user = await findOneUser(email);
       if (!user) return await responseError(res, null, 404, 'Email Address is not exists');
 
       return await responseSuccess(res, 'Login success', user, {});

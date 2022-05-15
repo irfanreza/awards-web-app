@@ -5,6 +5,6 @@ const router = express.Router();
 
 const { getAllAwards } = require('../../controllers/v1/awards.controller');
 
-router.get('/', getAllAwards);
+router.post('/', getAllAwards);
 
 module.exports = router;

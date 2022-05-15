@@ -10,7 +10,7 @@ module.exports = {
   async responseError(res, error, statusCode = 500, message) {
     return res.status(statusCode).send({
       success: false,
-      message: error.message && message,
+      message: error ? error.message : message,
     })
   }
 }

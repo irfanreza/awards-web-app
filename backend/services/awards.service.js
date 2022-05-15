@@ -20,6 +20,6 @@ module.exports = {
       options.where['exchange_point'] = { [Op.between]: [min, max] };
     }
 
-    return await Award.findAll(options)
+    return [await Award.count(options), await Award.findAll(options)]
   }
 }

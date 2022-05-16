@@ -76,12 +76,14 @@
             </v-btn>
           </v-toolbar>
           <div  v-if="filterHistory.length > 0" class="ml-4 mt-4 mb-4">
-            <div v-for="filter in filterHistory">
+            <div v-for="filter in filterHistory" :key="filter.id">
               <v-chip
               class="ma-2"
               close
               color="primary"
               outlined
+              @click:close="handleSingleClearClick(filter.id)"
+              @click="handleFilterHistoryClick(filter.filter)"
             >
               {{filter.text}}
             </v-chip>
@@ -91,6 +93,7 @@
               class="ma-2"
               color="primary"
               outlined
+              @click="clearFilterClickHandle"
             >
               Clear All Filter
             </v-chip>
@@ -257,28 +260,38 @@
         this.dialog = false
         this.lastRouter = this.lastRouter === 'home' ? 'filter' : 'home'
         const appliedFilter = {
+          id: 0,
           text: '',
           filter: {
             types: this.types,
             pointRange: this.pointRange
           }
         }
+        let isFilterUse = false
         if(this.types.length === 1 ) {
           appliedFilter.text += `Type: ${this.types[0]} `
+          isFilterUse = true;
         } else if (this.types.length > 1) {
           appliedFilter.text += `Type: ${this.types.join(',')} `
+          isFilterUse = true;
         }
 
         if(typeof this.pointRange.min === 'number' && typeof this.pointRange.max === 'number') {
           appliedFilter.text += `Poin: ${this.pointRange.min} - ${this.pointRange.max}`
+          isFilterUse = true;
         }
         
         let filterHistory = JSON.parse(localStorage.getItem('filter'))
-        if (!filterHistory) filterHistory = [];
-        console.log(filterHistory)
-        filterHistory.push(appliedFilter)
+        if (!filterHistory) {
+          filterHistory = []
+          appliedFilter.id = 1
+        } else {
+          appliedFilter.id = filterHistory[filterHistory.length-1].id + 1
+        }
+        // console.log(filterHistory)
+        if(isFilterUse) filterHistory.push(appliedFilter)
         localStorage.setItem('filter', JSON.stringify(filterHistory))
-        this.filterHistory = filterHistory.reverse().slice(0,3)
+        this.filterHistory = filterHistory.reverse().slice(0,4)
         this.$router.push({ name: this.lastRouter, params: { types: this.types, pointRange: this.pointRange } })
       },
       minChangeHandle(e) {
@@ -308,7 +321,29 @@
           this.max = null
           this.lastRouter = 'home'
         }
+      },
+      clearFilterClickHandle() {
+        localStorage.setItem('filter', JSON.stringify([]))
+        this.filterHistory = []
+      },
+      handleSingleClearClick(id) {
+        let filterHistory = JSON.parse(localStorage.getItem('filter'))
+        filterHistory = filterHistory.filter(history => history.id !== id)
+        localStorage.setItem('filter', JSON.stringify(filterHistory))
+        this.filterHistory = filterHistory
+      },
+      handleFilterHistoryClick(filter) {
+        this.dialog = false
+        this.lastRouter = this.lastRouter === 'home' ? 'filter' : 'home'
+        this.$router.push({ name: this.lastRouter, params: { types: filter.types, pointRange: filter.pointRange } })
       }
+    },
+
+    created () {
+      let filterHistory = JSON.parse(localStorage.getItem('filter'))
+      if (!filterHistory) filterHistory = [];
+      console.log(filterHistory)
+      this.filterHistory = filterHistory.reverse().slice(0,3)
     }
   }
 </script>

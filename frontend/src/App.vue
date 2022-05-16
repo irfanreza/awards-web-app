@@ -22,6 +22,7 @@
           v-for="item in items"
           :key="item.title"
           :to="item.to"
+          @click="menuClickHandler($event)"
           link
         >
           <v-list-item-icon>
@@ -74,6 +75,28 @@
               <v-icon>mdi-close</v-icon>
             </v-btn>
           </v-toolbar>
+          <div  v-if="filterHistory.length > 0" class="ml-4 mt-4 mb-4">
+            <div v-for="filter in filterHistory">
+              <v-chip
+              class="ma-2"
+              close
+              color="primary"
+              outlined
+            >
+              {{filter.text}}
+            </v-chip>
+            </div>
+            <div v-if="filterHistory.length > 1">
+              <v-chip
+              class="ma-2"
+              color="primary"
+              outlined
+            >
+              Clear All Filter
+            </v-chip>
+            </div>
+          </div>
+          <v-divider></v-divider>
           <div class="ml-4 mt-4 mb-4">
             <p class="mb-0 font-weight-medium">
               Poin Needed
@@ -182,6 +205,8 @@
       pointRange: { min: null, max: null },
       min: null,
       max: null,
+      lastRouter: 'home',
+      filterHistory: []
     }),
 
     methods: {
@@ -230,6 +255,31 @@
       },
       saveClickHandle() {
         this.dialog = false
+        this.lastRouter = this.lastRouter === 'home' ? 'filter' : 'home'
+        const appliedFilter = {
+          text: '',
+          filter: {
+            types: this.types,
+            pointRange: this.pointRange
+          }
+        }
+        if(this.types.length === 1 ) {
+          appliedFilter.text += `Type: ${this.types[0]} `
+        } else if (this.types.length > 1) {
+          appliedFilter.text += `Type: ${this.types.join(',')} `
+        }
+
+        if(typeof this.pointRange.min === 'number' && typeof this.pointRange.max === 'number') {
+          appliedFilter.text += `Poin: ${this.pointRange.min} - ${this.pointRange.max}`
+        }
+        
+        let filterHistory = JSON.parse(localStorage.getItem('filter'))
+        if (!filterHistory) filterHistory = [];
+        console.log(filterHistory)
+        filterHistory.push(appliedFilter)
+        localStorage.setItem('filter', JSON.stringify(filterHistory))
+        this.filterHistory = filterHistory.reverse().slice(0,3)
+        this.$router.push({ name: this.lastRouter, params: { types: this.types, pointRange: this.pointRange } })
       },
       minChangeHandle(e) {
         const number = e.replace(/[^0-9\.]+/g, '')
@@ -243,6 +293,21 @@
         else this.max = number
         this.pointRange.max = +this.max
         // console.log(this.pointRange)
+      },
+      menuClickHandler(e) {
+        if(e.view.window.location.pathname === '/') {
+          this.vouchers = null
+          this.products = null
+          this.others = null
+          this.types= []
+          this.pointRange = {
+            min: null,
+            max: null
+          }
+          this.min = null,
+          this.max = null
+          this.lastRouter = 'home'
+        }
       }
     }
   }

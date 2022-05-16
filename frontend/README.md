@@ -6,6 +6,8 @@
 - Vuetify Version v2.6.0
 # How to section
 ## How to run frontend
+- Copy .env.sample to .env
+- Change VUE_APP_API_BASE_URL value to your backend url
 - Run script below to start frontend
 ```bash
 npm run serve

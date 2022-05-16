@@ -70,7 +70,7 @@
           types: this.types,
           point_range: this.pointRange
         }
-        let awards = await axios.post(`http://localhost:3030/api/v1/awards?page=${this.page}&limit=${this.limit}`, data, config)
+        let awards = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/v1/awards?page=${this.page}&limit=${this.limit}`, data, config)
 
         this.awards.push(...awards.data.data)
         this.lastPage = awards.data.meta.last_page

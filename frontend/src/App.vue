@@ -21,6 +21,7 @@
         <v-list-item
           v-for="item in items"
           :key="item.title"
+          :to="item.to"
           link
         >
           <v-list-item-icon>
@@ -72,72 +73,78 @@
             >
               <v-icon>mdi-close</v-icon>
             </v-btn>
-            <!-- <v-toolbar-items>
-              <v-btn
-                dark
-                text
-                @click="dialog = false"
-              >
-                Save
-              </v-btn>
-            </v-toolbar-items> -->
           </v-toolbar>
-          <v-list
-            three-line
-            subheader
-          >
-            <v-subheader>User Controls</v-subheader>
-            <v-list-item>
-              <v-list-item-content>
-                <v-list-item-title>Content filtering</v-list-item-title>
-                <v-list-item-subtitle>Set the content filtering level to restrict apps that can be downloaded</v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-            <v-list-item>
-              <v-list-item-content>
-                <v-list-item-title>Password</v-list-item-title>
-                <v-list-item-subtitle>Require password for purchase or use password to restrict purchase</v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
+          <div class="ml-4 mt-4 mb-4">
+            <p class="mb-0 font-weight-medium">
+              Poin Needed
+            </p>
+            <v-form>
+            <v-container>
+              <v-row>
+                <v-col
+                  cols="6"
+                  md="6"
+                >
+                  <v-text-field
+                    v-model="min"
+                    label="Min Poin"
+                    @change="minChangeHandle($event)"
+                    value="min"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col
+                  cols="6"
+                  md="6"
+                >
+                  <v-text-field
+                    v-model="max"
+                    label="Max Poin"
+                    @change="maxChangeHandle($event)"
+                    value="max"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-form>
+          </div>
           <v-divider></v-divider>
-          <v-list
-            three-line
-            subheader
-          >
-            <v-subheader>General</v-subheader>
-            <v-list-item>
-              <v-list-item-action>
-                <v-checkbox v-model="notifications"></v-checkbox>
-              </v-list-item-action>
-              <v-list-item-content>
-                <v-list-item-title>Notifications</v-list-item-title>
-                <v-list-item-subtitle>Notify me about updates to apps or games that I downloaded</v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-            <v-list-item>
-              <v-list-item-action>
-                <v-checkbox v-model="sound"></v-checkbox>
-              </v-list-item-action>
-              <v-list-item-content>
-                <v-list-item-title>Sound</v-list-item-title>
-                <v-list-item-subtitle>Auto-update apps at any time. Data charges may apply</v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-            <v-list-item>
-              <v-list-item-action>
-                <v-checkbox v-model="widgets"></v-checkbox>
-              </v-list-item-action>
-              <v-list-item-content>
-                <v-list-item-title>Auto-add widgets</v-list-item-title>
-                <v-list-item-subtitle>Automatically add home screen widgets</v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
+          <div class="ml-4 mt-4 mb-4">
+            <p class="font-weight-medium">
+              Awards Type
+            </p>
+            <v-checkbox
+              v-model="allType"
+              label="All Type"
+              hide-details
+              @change="allTypeClickHandle($event)"
+            ></v-checkbox>
+            <v-checkbox
+              v-model="vouchers"
+              label="Vouchers"
+              value="Vouchers"
+              hide-details
+              @change="vouchersClickHandle($event)"
+            ></v-checkbox>
+            <v-checkbox
+              v-model="products"
+              label="Products"
+              value="Products"
+              hide-details
+              @change="productsClickHandle($event)"
+            ></v-checkbox>
+            <v-checkbox
+              v-model="others"
+              label="Others"
+              value="Others"
+              hide-details
+              @change="othersClickHandle($event)"
+            ></v-checkbox>
+          </div>
           <v-btn
             block
             text
-            @click="dialog = false"
+            @click="saveClickHandle"
             :style="{ color: 'white', backgroundColor: '#1867c0' }"
           >
             Save
@@ -158,7 +165,7 @@
     data: () => ({
       drawer: null,
       items: [
-        { title: 'Home', icon: 'mdi-view-dashboard' },
+        { title: 'Home', icon: 'mdi-view-dashboard', to: '/' },
         { title: 'Cards', icon: 'mdi-image' },
         { title: 'Profile', icon: 'mdi-help-box' },
         { title: 'Logout', icon: 'mdi-help-box' },
@@ -167,6 +174,76 @@
       notifications: false,
       sound: true,
       widgets: false,
+      allType: false,
+      vouchers: null,
+      products: null,
+      others: null,
+      types: [],
+      pointRange: { min: null, max: null },
+      min: null,
+      max: null,
     }),
+
+    methods: {
+      allTypeClickHandle(e) {
+        if (e) {
+          const fullTypeFilter = ['Vouchers', 'Products', 'Others']
+          const currentUncheckFilter = fullTypeFilter.filter(value => !this.types.includes(value))
+          this.types.push(...currentUncheckFilter)
+          this.vouchers = 'Vouchers'
+          this.products = 'Products'
+          this.others = 'Others'
+        } else {
+          this.vouchers = null
+          this.products = null
+          this.others = null
+          this.types= []
+        }
+        // console.log(this.types)
+      },
+      vouchersClickHandle(e) {
+        if (e) this.types.push(e)
+        else this.removeFilterHandler('Vouchers')
+        this.isAllTypeCheck()
+      },
+      productsClickHandle(e) {
+        if (e) this.types.push(e)
+        else this.removeFilterHandler('Products')
+        this.isAllTypeCheck()
+      },
+      othersClickHandle(e) {
+        if (e) this.types.push(e)
+        else this.removeFilterHandler('Others')
+        this.isAllTypeCheck()
+      },
+      removeFilterHandler(item) {
+        const index = this.types.indexOf(item)
+        this.types.splice(index, 1)
+        // console.log(this.types)
+      },
+      isAllTypeCheck() {
+        const fullTypeFilter = ['Vouchers', 'Products', 'Others'].sort().join(',')
+        const currentTypeFilter = this.types.sort().join(',')
+        if (fullTypeFilter === currentTypeFilter) this.allType = true
+        else this.allType = false
+        // console.log(this.types)
+      },
+      saveClickHandle() {
+        this.dialog = false
+      },
+      minChangeHandle(e) {
+        const number = e.replace(/[^0-9\.]+/g, '')
+        this.min = number
+        this.pointRange.min = +this.min
+        // console.log(this.pointRange)
+      },
+      maxChangeHandle(e) {
+        const number = e.replace(/[^0-9\.]+/g, '')
+        if(number < this.min) this.max = this.min
+        else this.max = number
+        this.pointRange.max = +this.max
+        // console.log(this.pointRange)
+      }
+    }
   }
 </script>

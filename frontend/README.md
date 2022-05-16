@@ -8,5 +8,5 @@
 ## How to run frontend
 - Run script below to start frontend
 ```bash
-npm start
+npm run serve
 ```
